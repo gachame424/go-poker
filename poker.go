@@ -21,7 +21,6 @@ func main() {
 	drawnNumArray = drawNums(drawnNumArray, 5)
 	display(drawnNumArray, 0)
 	drawnNumArray = changeCard(drawnNumArray)
-	drawnNumArray = drawNums(drawnNumArray, 5-len(drawnNumArray))
 	display(drawnNumArray, 1)
 	fmt.Println(checkPoker())
 }
@@ -107,7 +106,8 @@ func changeCard(drawnNumArray []int) []int {
 		cardNoArray = append(cardNoArray, cardNo)
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(cardNoArray)))
-	return dropCard(cardNoArray, drawnNumArray)
+	drawnNumArray = dropCard(cardNoArray, drawnNumArray)
+	return drawNums(drawnNumArray, 5-len(drawnNumArray))
 }
 
 func dropCard(cardNoArray []int, drawnNumArray []int) []int {
