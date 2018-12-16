@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -22,7 +23,7 @@ func main() {
 	drawnNumArray = changeCard(drawnNumArray)
 	drawnNumArray = drawNums(drawnNumArray, 5-len(drawnNumArray))
 	display(drawnNumArray, 1)
-	checkPoker(drawnNumArray)
+	fmt.Println(checkPoker())
 }
 
 func drawNums(drawnNumArray []int, count int) []int {
@@ -86,15 +87,23 @@ func display(drawnNumArray []int, checkPokerFlg int) {
 }
 
 func changeCard(drawnNumArray []int) []int {
-	fmt.Println("変更するカードNoは？？(複数の場合はカンマ区切りで)")
+	fmt.Println("変更するカードNoは？？")
+	fmt.Println("(複数の場合はカンマ区切りで)")
 	stdin := bufio.NewScanner(os.Stdin)
 	stdin.Scan()
-	stdinCardNo := stdin.Text()
-	cardNoArrayTmp := strings.Split(stdinCardNo, ",")
+	stdinCardNo := strings.TrimSpace(stdin.Text())
+	if regexp.MustCompile("^$").Match([]byte(stdinCardNo)) {
+		return drawnNumArray
+	}
+	if !regexp.MustCompile("^(\\d,){0,4}\\d$").Match([]byte(stdinCardNo)) {
+		fmt.Println("ちゃんと指示に従え。馬鹿野郎。")
+		os.Exit(0)
+	}
+	changeCardNo := strings.Split(stdinCardNo, ",")
 	var cardNo = 0
 	var cardNoArray []int
-	for i := 0; i < len(cardNoArrayTmp); i++ {
-		cardNo, _ = strconv.Atoi(cardNoArrayTmp[i])
+	for i := 0; i < len(changeCardNo); i++ {
+		cardNo, _ = strconv.Atoi(changeCardNo[i])
 		cardNoArray = append(cardNoArray, cardNo)
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(cardNoArray)))
@@ -122,4 +131,134 @@ func unset(s []int, i int) []int {
 	return append(s[:i], s[i+1:]...)
 }
 
-func checkPoker(drawnNumArray []int) {}
+func checkPoker() string {
+	if isFullHouse() {
+		return "FullHouse"
+	}
+	if isFourCard() {
+		return "FourCard"
+	}
+	if isThreeCard() {
+		return "ThreeCard"
+	}
+	if isRoyalStraightFlush() {
+		return "RoyalStraightFlush"
+	}
+	if isStraightFlush() {
+		return "StraightFlush"
+	}
+	if isStraight() {
+		return "Straight"
+	}
+	if isFlush() {
+		return "Flush"
+	}
+	if isTwoPair() {
+		return "TwoPair"
+	}
+	if isOnePair() {
+		return "OnePair"
+	}
+	return "HighCard"
+}
+
+func isOnePair() bool {
+	if quotientArray[0] == quotientArray[1] ||
+		quotientArray[1] == quotientArray[2] ||
+		quotientArray[2] == quotientArray[3] ||
+		quotientArray[3] == quotientArray[4] {
+		return true
+	}
+	return false
+}
+
+func isTwoPair() bool {
+	if (quotientArray[0] == quotientArray[1] &&
+		(quotientArray[2] == quotientArray[3] ||
+			quotientArray[3] == quotientArray[4])) ||
+		quotientArray[1] == quotientArray[2] &&
+			quotientArray[3] == quotientArray[4] {
+		return true
+	}
+	return false
+}
+
+func isThreeCard() bool {
+	if (quotientArray[0] == quotientArray[1] &&
+		quotientArray[1] == quotientArray[2]) ||
+		(quotientArray[1] == quotientArray[2] &&
+			quotientArray[2] == quotientArray[3]) ||
+		(quotientArray[2] == quotientArray[3] &&
+			quotientArray[3] == quotientArray[4]) {
+		return true
+	}
+	return false
+}
+
+func isStraight() bool {
+	if quotientArray[0]+1 == quotientArray[1] &&
+		quotientArray[1]+1 == quotientArray[2] &&
+		quotientArray[2]+1 == quotientArray[3] &&
+		quotientArray[3]+1 == quotientArray[4] {
+		return true
+	}
+
+	return false
+}
+
+func isFlush() bool {
+	if remainderArray[0] == remainderArray[1] &&
+		remainderArray[1] == remainderArray[2] &&
+		remainderArray[2] == remainderArray[3] &&
+		remainderArray[3] == remainderArray[4] {
+		return true
+	}
+	return false
+}
+
+func isFullHouse() bool {
+	if (quotientArray[0] == quotientArray[1] &&
+		quotientArray[1] == quotientArray[2] &&
+		quotientArray[3] == quotientArray[4]) ||
+		(quotientArray[0] == quotientArray[1] &&
+			quotientArray[2] == quotientArray[3] &&
+			quotientArray[3] == quotientArray[4]) {
+		return true
+	}
+	return false
+}
+
+func isFourCard() bool {
+	if quotientArray[0] == quotientArray[1] &&
+		quotientArray[2] == quotientArray[3] &&
+		quotientArray[0] == quotientArray[2] {
+		return true
+	}
+	if quotientArray[1] == quotientArray[2] &&
+		quotientArray[3] == quotientArray[4] &&
+		quotientArray[1] == quotientArray[3] {
+		return true
+	}
+	return false
+}
+
+func isStraightFlush() bool {
+	if isStraight() && isFlush() {
+		return true
+	}
+	return false
+}
+
+func isRoyalStraightFlush() bool {
+	if !isFlush() {
+		return false
+	}
+	if quotientArray[0] == 0 &&
+		quotientArray[1] == 9 &&
+		quotientArray[2] == 10 &&
+		quotientArray[3] == 11 &&
+		quotientArray[4] == 12 {
+		return true
+	}
+	return false
+}
