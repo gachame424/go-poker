@@ -94,7 +94,7 @@ func changeCard(drawnNumArray []int) []int {
 	if regexp.MustCompile("^$").Match([]byte(stdinCardNo)) {
 		return drawnNumArray
 	}
-	if !regexp.MustCompile("^(\\d,){0,4}\\d$").Match([]byte(stdinCardNo)) {
+	if !regexp.MustCompile("^(\\d+,){0,4}\\d+$").Match([]byte(stdinCardNo)) {
 		fmt.Println("ちゃんと指示に従え。馬鹿野郎。")
 		os.Exit(0)
 	}
